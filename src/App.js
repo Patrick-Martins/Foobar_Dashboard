@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import BeerKegs from "./components/BeerKegs";
 import Bartenders from "./components/Bartenders";
@@ -22,7 +22,28 @@ export default function App() {
   const [queue, setQueue] = useState([]);
   const [bartenders, setBartenders] = useState([]);
 
-  setInterval(() => fetching.fetchBar(setBeers, setStorage, setServing, setQueue, setBartenders), 10000);
+  //source: https://overreacted.io/making-setinterval-declarative-with-react-hooks/
+  function useInterval(callback, delay) {
+    const savedCallback = useRef();
+
+    // Remember the latest callback.
+    useEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+
+    // Set up the interval.
+    useEffect(() => {
+      function tick() {
+        savedCallback.current();
+      }
+      if (delay !== null) {
+        let id = setInterval(tick, delay);
+        return () => clearInterval(id);
+      }
+    }, [delay]);
+  }
+
+  useInterval(() => fetching.fetchBar(setBeers, setStorage, setServing, setQueue, setBartenders), 10000);
 
   //GSAP
   useEffect(() => {
